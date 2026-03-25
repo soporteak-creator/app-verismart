@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VeriSmart — Propuesta de Migración de Infraestructura · Veritas.cl</title>
+  <meta name="description" content="Propuesta técnica para migrar VeriSmart de AWS a una infraestructura moderna, eficiente y de menor costo." />
+
+  <!-- Shared & Theme styles -->
+  <link rel="stylesheet" href="../../shared/css/base.css" />
+  <link rel="stylesheet" href="css/theme.css" />
+
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div id="progress-bar"></div>
+
+<!-- ───────────────── NAV ───────────────── -->
+<nav class="site-nav" aria-label="Navegación principal">
+  <a class="nav-logo" href="../../index.html">
+    <span style="color:var(--veritas-navy)">VS</span> VeriSmart
+  </a>
+  <ul class="nav-links" role="list">
+    <li><a href="#intro">Inicio</a></li>
+    <li><a href="#stack">Stack</a></li>
+    <li><a href="#problem">Problema</a></li>
+    <li><a href="#comparison">Comparativa</a></li>
+    <li><a href="#chart">Costos</a></li>
+    <li><a href="#migration">Migración</a></li>
+    <li><a href="#closing">Cierre</a></li>
+  </ul>
+</nav>
+
+<!-- ───────────────── 1. HERO ───────────────── -->
+<section class="section hero" id="intro">
+  <div class="hero__bg-shape"></div>
+  <div class="hero__bg-dots"></div>
+  <div class="container">
+    <div class="hero__content">
+      <div class="hero__eyebrow">
+        <span class="badge badge--accent">Veritas.cl · Infraestructura 2025</span>
+        <span class="label">Propuesta técnica interna</span>
+      </div>
+      <h1 class="hero__title">
+        VeriSmart<br/>
+        <em>necesita un nuevo</em><br/>
+        hogar en la nube
+      </h1>
+      <p class="hero__subtitle">
+        Nuestra plataforma Vue + Node.js + MongoDB está corriendo en AWS con costos
+        crecientes y latencia subóptima para usuarios en Chile. Es momento de migrar.
+      </p>
+      <div class="hero__actions">
+        <a href="#problem" class="btn btn--primary">Ver el problema →</a>
+        <a href="#comparison" class="btn btn--ghost">Comparar opciones</a>
+      </div>
+    </div>
+  </div>
+  <div class="hero__scroll-hint">
+    <span>Scroll</span>
+    <span class="scroll-arrow"></span>
+  </div>
+</section>
+
+<!-- ───────────────── 2. INTRO / APP ───────────────── -->
+<section class="section stack-section" id="stack">
+  <div class="container">
+    <div class="flex" style="gap:var(--space-16);align-items:center;flex-wrap:wrap;">
+      <!-- Left: text -->
+      <div style="flex:1;min-width:280px;" class="slide-left">
+        <div class="section-header">
+          <span class="label label--accent">La plataforma</span>
+          <h2>Qué es VeriSmart y cómo está construida</h2>
+          <p>
+            VeriSmart es la aplicación web central de Veritas.cl. Sirve tanto a
+            clientes internos como externos para la gestión de procesos de
+            certificación y auditoría. Todo el stack vive en contenedores Docker.
+          </p>
+        </div>
+
+        <div class="stack-diagram stagger-children">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Right: docker-compose preview -->
+      <div style="flex:1;min-width:300px;" class="slide-right">
+        <div class="code-block">
+          <div class="code-block__header">
+            <span class="code-dot code-dot--red"></span>
+            <span class="code-dot code-dot--yellow"></span>
+            <span class="code-dot code-dot--green"></span>
+            <span class="code-block__filename">docker-compose.yml</span>
+          </div>
+          <pre><code><span class="code-key">version:</span> <span class="code-str">'3.9'</span>
+<span class="code-key">services:</span>
+
+  <span class="code-key">frontend:</span>
+    <span class="code-key">build:</span> <span class="code-str">./frontend</span>  <span class="code-cmt"># Vue.js 3</span>
+    <span class="code-key">ports:</span>
+      - <span class="code-str">"3000:3000"</span>
+    <span class="code-key">environment:</span>
+      - <span class="code-str">VITE_API_URL=http://api:8080</span>
+
+  <span class="code-key">api:</span>
+    <span class="code-key">build:</span> <span class="code-str">./backend</span>   <span class="code-cmt"># Node.js 20</span>
+    <span class="code-key">ports:</span>
+      - <span class="code-str">"8080:8080"</span>
+    <span class="code-key">depends_on:</span>
+      - <span class="code-str">mongo</span>
+    <span class="code-key">environment:</span>
+      - <span class="code-str">MONGO_URI=mongodb://mongo:27017/vs</span>
+
+  <span class="code-key">mongo:</span>
+    <span class="code-key">image:</span> <span class="code-str">mongo:7</span>
+    <span class="code-key">volumes:</span>
+      - <span class="code-str">mongo_data:/data/db</span>
+
+<span class="code-key">volumes:</span>
+  <span class="code-key">mongo_data:</span></code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture diagram cards -->
+    <div class="grid-3 stagger-children" style="margin-top:var(--space-16);">
+      <div class="card fade-up">
+        <div style="font-size:2rem;margin-bottom:var(--space-3);">⬡</div>
+        <h4>Frontend SPA</h4>
+        <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-2);">
+          Vue.js 3 + Vite. Aplicación de página única con routing del lado del
+          cliente. Build estático servido por Nginx dentro del contenedor.
+        </p>
+      </div>
+      <div class="card fade-up">
+        <div style="font-size:2rem;margin-bottom:var(--space-3);">⚡</div>
+        <h4>API REST</h4>
+        <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-2);">
+          Node.js 20 LTS + Express. Autenticación JWT, middleware de roles,
+          integración con servicios de Veritas.cl.
+        </p>
+      </div>
+      <div class="card fade-up">
+        <div style="font-size:2rem;margin-bottom:var(--space-3);">🍃</div>
+        <h4>Base de datos</h4>
+        <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-2);">
+          MongoDB 7 con esquemas Mongoose. Documentos flexibles para estructuras
+          de certificación variables y auditorías históricas.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────── 3. PROBLEMA ───────────────── -->
+<section class="section problem-section" id="problem">
+  <div class="container">
+    <div class="flex" style="gap:var(--space-16);align-items:flex-start;flex-wrap:wrap;">
+      <!-- Left -->
+      <div style="flex:1;min-width:280px;">
+        <div class="section-header">
+          <span class="label label--accent">El problema</span>
+          <h2>AWS nos está costando caro en todos los sentidos</h2>
+          <p>
+            La configuración actual en AWS EC2 + RDS fue válida para lanzar rápido,
+            pero hoy presenta problemas de costo, latencia y complejidad operacional
+            que frenan la evolución del producto.
+          </p>
+        </div>
+
+        <!-- KPI grid — populated by JS -->
+        <div class="kpi-grid stagger-children" id="problem-metrics"></div>
+      </div>
+
+      <!-- Right: problem list -->
+      <div style="flex:1;min-width:280px;">
+        <div class="problem-list">
+          <div class="problem-item">
+            <div class="problem-item__icon">💸</div>
+            <div>
+              <div class="problem-item__title">Costo desproporcionado</div>
+              <div class="problem-item__desc">
+                Pagamos servicios enterprise de AWS (EC2 t3.large + RDS + ALB + NAT Gateway)
+                para una app que no justifica esa complejidad ni ese gasto mensual.
+              </div>
+            </div>
+          </div>
+          <div class="problem-item">
+            <div class="problem-item__icon">🌎</div>
+            <div>
+              <div class="problem-item__title">Sin región en LatAm</div>
+              <div class="problem-item__desc">
+                La instancia está en us-east-1 (Virginia). Los usuarios en Chile sufren
+                ~280ms de latencia en cada request. El estándar UX objetivo es bajo 100ms.
+              </div>
+            </div>
+          </div>
+          <div class="problem-item">
+            <div class="problem-item__icon">🐌</div>
+            <div>
+              <div class="problem-item__title">Deploy lento y manual</div>
+              <div class="problem-item__desc">
+                Cada deploy requiere 18 minutos entre push, build en CodeBuild y
+                rollout en ECS. Iterar rápido se hace cuesta arriba.
+              </div>
+            </div>
+          </div>
+          <div class="problem-item">
+            <div class="problem-item__icon">🔧</div>
+            <div>
+              <div class="problem-item__title">Overhead operacional alto</div>
+              <div class="problem-item__desc">
+                Security groups, VPC, subnets, IAM roles... Configuración que
+                consume tiempo de ingeniería que debería estar en el producto.
+              </div>
+            </div>
+          </div>
+          <div class="problem-item">
+            <div class="problem-item__icon">📈</div>
+            <div>
+              <div class="problem-item__title">Costos que solo suben</div>
+              <div class="problem-item__desc">
+                AWS ajusta precios y agrega cargos (data transfer, requests, storage).
+                Sin un plan, el costo anual supera los $22.000 USD.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────── 4. COMPARATIVA ───────────────── -->
+<section class="section comparison-section" id="comparison">
+  <div class="container">
+    <div class="section-header fade-up">
+      <span class="label label--accent">La solución</span>
+      <h2>Comparativa de proveedores</h2>
+      <p>
+        Evaluamos 5 opciones considerando costo, latencia para Chile, compatibilidad
+        con nuestro stack Docker y calidad del soporte.
+      </p>
+    </div>
+
+    <!-- Recommended highlight -->
+    <div class="fade-up" style="margin-bottom:var(--space-6);">
+      <div class="recommended-badge">
+        ⭐ Recomendado: Railway
+      </div>
+      <p style="font-size:var(--text-sm);color:var(--color-text-muted);max-width:none;">
+        Railway ofrece la mejor relación precio-performance para nuestro stack,
+        con región en São Paulo (LatAm), deploy directo desde Docker Compose y
+        precios 82% menores a los actuales.
+      </p>
+    </div>
+
+    <div style="overflow-x:auto;" class="fade-in">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Característica</th>
+            <th>AWS (actual)</th>
+            <th class="highlight">Railway ⭐</th>
+            <th>Render</th>
+            <th>Fly.io</th>
+            <th>Railway + Atlas</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Provider pros/cons cards -->
+    <div class="grid-2 stagger-children" style="margin-top:var(--space-10);">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);">
+          <span style="font-size:1.5rem;">🚂</span>
+          <div>
+            <h4>Railway</h4>
+            <span class="badge badge--accent" style="font-size:10px;">Recomendado</span>
+          </div>
+        </div>
+        <div style="margin-bottom:var(--space-4);">
+          <div class="label" style="margin-bottom:var(--space-2);">Ventajas clave</div>
+          <ul style="display:flex;flex-direction:column;gap:var(--space-2);">
+            <li style="font-size:var(--text-sm);display:flex;gap:var(--space-2);color:var(--color-text-muted);">
+              <span style="color:var(--color-success);">✓</span> Deploy directo desde <code style="font-size:11px;background:var(--color-surface-2);padding:1px 4px;border-radius:3px;">docker-compose.yml</code>
+            </li>
+            <li style="font-size:var(--text-sm);display:flex;gap:var(--space-2);color:var(--color-text-muted);">
+              <span style="color:var(--color-success);">✓</span> Región São Paulo — ~95ms desde Chile
+            </li>
+            <li style="font-size:var(--text-sm);display:flex;gap:var(--space-2);color:var(--color-text-muted);">
+              <span style="color:var(--color-success);">✓</span> $340 USD/mes vs $1.840 actual
+            </li>
+            <li style="font-size:var(--text-sm);display:flex;gap:var(--space-2);color:var(--color-text-muted);">
+              <span style="color:var(--color-success);">✓</span> Escala automática incluida
+            </li>
+          </ul>
+        </div>
+        <div style="padding-top:var(--space-4);border-top:1px solid var(--color-border);">
+          <div class="label" style="margin-bottom:var(--space-2);">Consideraciones</div>
+          <p style="font-size:var(--text-sm);color:var(--color-text-muted);">
+            MongoDB requiere servicio externo (Atlas Shared gratis o M10 $57/mes para producción).
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);">
+          <span style="font-size:1.5rem;">☁️</span>
+          <div>
+            <h4>AWS EC2 + RDS</h4>
+            <span class="badge badge--danger" style="font-size:10px;">Situación actual</span>
+          </div>
+        </div>
+        <div style="margin-bottom:var(--space-4);">
+          <div class="label" style="margin-bottom:var(--space-2);">Por qué migrar</div>
+          <ul style="display:flex;flex-direction:column;gap:var(--space-2);">
+            <li style="font-size:var(--text-sm);display:flex;gap:var(--space-2);color:var(--color-text-muted);">
+              <span style="color:var(--color-danger);">✗</span> $1.840 USD/mes — sobreprovisionado
+            </li>
+            <li style="font-size:var(--text-sm);display:flex;gap:var(--space-2);color:var(--color-text-muted);">
+              <span style="color:var(--color-danger);">✗</span> Sin región LatAm — Virginia (us-east-1)
+            </li>
+            <li style="font-size:var(--text-sm);display:flex;gap:var(--space-2);color:var(--color-text-muted);">
+              <span style="color:var(--color-danger);">✗</span> 18 min de deploy en promedio
+            </li>
+            <li style="font-size:var(--text-sm);display:flex;gap:var(--color-danger);">
+              <span style="color:var(--color-danger);">✗</span> Overhead de VPC, IAM, subnets
+            </li>
+          </ul>
+        </div>
+        <div style="padding-top:var(--space-4);border-top:1px solid var(--color-border);">
+          <div class="label" style="margin-bottom:var(--space-2);">Impacto si no migramos</div>
+          <p style="font-size:var(--text-sm);color:var(--color-text-muted);">
+            Proyección: $2.460 USD/mes para diciembre 2025 si seguimos el ritmo actual de crecimiento de costos.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Savings strip — populated by JS -->
+    <div class="savings-strip stagger-children" id="savings-strip"></div>
+  </div>
+</section>
+
+<!-- ───────────────── 5. GRÁFICO ───────────────── -->
+<section class="section chart-section" id="chart">
+  <div class="container">
+    <div class="section-header fade-up">
+      <span class="label label--accent">Proyección de costos</span>
+      <h2>Costo mensual: AWS vs Railway</h2>
+      <p>
+        Proyección 12 meses considerando el crecimiento histórico de AWS
+        y los precios estables de Railway.
+      </p>
+    </div>
+
+    <div class="chart-container fade-in">
+      <div class="chart-legend">
+        <div class="chart-legend-item">
+          <span class="legend-dot" style="background:#EF4444;"></span>
+          AWS (actual) — escalando
+        </div>
+        <div class="chart-legend-item">
+          <span class="legend-dot" style="background:#1B3F8B;"></span>
+          Railway (propuesto) — estable
+        </div>
+      </div>
+      <div style="height:360px;">
+        <canvas id="cost-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Annual comparison cards -->
+    <div class="grid-2 stagger-children" style="margin-top:var(--space-10);">
+      <div class="card" style="border-top:3px solid var(--color-danger);">
+        <div class="label" style="color:var(--color-danger);margin-bottom:var(--space-3);">Escenario actual</div>
+        <div style="font-family:var(--font-display);font-size:var(--text-4xl);font-weight:700;color:var(--color-danger);line-height:1;">
+          $22.080
+        </div>
+        <div style="font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-2);">USD / año en AWS (proyección 2025)</div>
+        <div class="divider" style="background:var(--color-danger);"></div>
+        <ul style="display:flex;flex-direction:column;gap:var(--space-2);">
+          <li style="font-size:var(--text-sm);color:var(--color-text-muted);">EC2 t3.large: ~$120/mes</li>
+          <li style="font-size:var(--text-sm);color:var(--color-text-muted);">RDS (MongoDB self-hosted): ~$180/mes</li>
+          <li style="font-size:var(--text-sm);color:var(--color-text-muted);">ALB + NAT + data transfer: ~$140/mes</li>
+          <li style="font-size:var(--text-sm);color:var(--color-text-muted);">Support Business: ~$100/mes</li>
+          <li style="font-size:var(--text-sm);color:var(--color-text-muted);">Overhead devops: ~$1.300/mes (estimado)</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid var(--color-accent);">
+        <div class="label" style="color:var(--color-accent);margin-bottom:var(--space-3);">Con Railway + Atlas</div>
+        <div style="font-family:var(--font-display);font-size:var(--text-4xl);font-weight:700;color:var(--color-accent);line-height:1;">
+          $4.260
+        </div>
+        <div style="font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-2);">USD / año (proyección 2025)</div>
+        <div class="divider"></div>
+        <ul style="display:flex;flex-direction:column;gap:var(--space-2);">
+          <li style="font-size:var(--text-sm);color:var(--color-text-muted);">Railway (frontend + backend): ~$280/mes</li>
+          <li style="font-size:var(--text-sm);color:var(--color-text-muted);">MongoDB Atlas M10: ~$57/mes</li>
+          <li style="font-size:var(--text-sm);color:var(--color-text-muted);">Transfer + SSL incluidos: $0</li>
+          <li style="font-size:var(--text-sm);color:var(--color-text-muted);">Deploy automático CI/CD: $0</li>
+          <li style="font-size:var(--text-sm);color:var(--color-text-muted);">Total: ~$355/mes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────── 6. MIGRACIÓN ───────────────── -->
+<section class="section migration-section" id="migration">
+  <div class="container">
+    <div class="flex" style="gap:var(--space-16);align-items:flex-start;flex-wrap:wrap;">
+      <div style="flex:1;min-width:280px;">
+        <div class="section-header fade-up">
+          <span class="label label--accent">Plan de migración</span>
+          <h2>3 fases, 3 semanas</h2>
+          <p>
+            La migración es incremental y reversible. En cada fase podemos
+            hacer rollback a AWS si algo no funciona como se espera.
+          </p>
+        </div>
+
+        <!-- Timeline — populated by JS -->
+        <div class="migration-timeline">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:280px;" class="slide-right">
+        <div class="card" style="background:var(--veritas-dark);border:none;color:#fff;">
+          <div style="margin-bottom:var(--space-6);">
+            <div class="label" style="color:rgba(255,255,255,.5);margin-bottom:var(--space-3);">Checklist técnico</div>
+            <h4 style="color:#fff;">Antes de migrar</h4>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+            <label style="display:flex;align-items:center;gap:var(--space-3);cursor:pointer;">
+              <input type="checkbox" style="width:16px;height:16px;accent-color:var(--veritas-amber);flex-shrink:0;" />
+              <span style="font-size:var(--text-sm);color:rgba(255,255,255,.75);">Auditar todas las variables de entorno (.env)</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--space-3);cursor:pointer;">
+              <input type="checkbox" style="width:16px;height:16px;accent-color:var(--veritas-amber);flex-shrink:0;" />
+              <span style="font-size:var(--text-sm);color:rgba(255,255,255,.75);">Verificar que Dockerfiles funcionan con <code style="font-size:11px;background:rgba(255,255,255,.1);padding:1px 4px;border-radius:3px;">docker build</code> limpio</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--space-3);cursor:pointer;">
+              <input type="checkbox" style="width:16px;height:16px;accent-color:var(--veritas-amber);flex-shrink:0;" />
+              <span style="font-size:var(--text-sm);color:rgba(255,255,255,.75);">Exportar snapshot completo de MongoDB antes de migrar</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--space-3);cursor:pointer;">
+              <input type="checkbox" style="width:16px;height:16px;accent-color:var(--veritas-amber);flex-shrink:0;" />
+              <span style="font-size:var(--text-sm);color:rgba(255,255,255,.75);">Crear Atlas cluster M10 en región São Paulo</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--space-3);cursor:pointer;">
+              <input type="checkbox" style="width:16px;height:16px;accent-color:var(--veritas-amber);flex-shrink:0;" />
+              <span style="font-size:var(--text-sm);color:rgba(255,255,255,.75);">Configurar entorno staging en Railway</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--space-3);cursor:pointer;">
+              <input type="checkbox" style="width:16px;height:16px;accent-color:var(--veritas-amber);flex-shrink:0;" />
+              <span style="font-size:var(--text-sm);color:rgba(255,255,255,.75);">Ejecutar suite completa de tests de integración</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--space-3);cursor:pointer;">
+              <input type="checkbox" style="width:16px;height:16px;accent-color:var(--veritas-amber);flex-shrink:0;" />
+              <span style="font-size:var(--text-sm);color:rgba(255,255,255,.75);">Plan de rollback documentado y aprobado</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--space-3);cursor:pointer;">
+              <input type="checkbox" style="width:16px;height:16px;accent-color:var(--veritas-amber);flex-shrink:0;" />
+              <span style="font-size:var(--text-sm);color:rgba(255,255,255,.75);">Ventana de mantenimiento comunicada a usuarios</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:var(--space-6);">
+          <div class="label" style="margin-bottom:var(--space-3);">Riesgo estimado</div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:var(--text-sm);">
+              <span>Pérdida de datos</span>
+              <span class="badge badge--success">Bajo</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:var(--text-sm);">
+              <span>Downtime en cutover</span>
+              <span class="badge badge--warning">Medio (&lt;30 min)</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:var(--text-sm);">
+              <span>Incompatibilidad de stack</span>
+              <span class="badge badge--success">Bajo (todo es Docker)</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:var(--text-sm);">
+              <span>Reversibilidad</span>
+              <span class="badge badge--success">Alta</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────── 7. CIERRE ───────────────── -->
+<section class="section closing-section" id="closing">
+  <div class="closing-logo">Veritas</div>
+  <div class="container" style="display:flex;justify-content:center;">
+    <div class="closing-content fade-up">
+      <div class="label label--accent" style="display:inline-block;margin-bottom:var(--space-6);background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);">
+        La decisión
+      </div>
+      <h2 style="margin-bottom:var(--space-6);">
+        Migrar es la decisión<br/>
+        <em>más inteligente</em>
+      </h2>
+      <p>
+        Con una inversión de 3 semanas de trabajo, VeriSmart puede correr
+        más rápido, más cerca de sus usuarios, y con 80% menos de costo anual.
+      </p>
+
+      <!-- Savings callout -->
+      <div class="closing-savings">
+        <div>
+          <div class="closing-savings-amount" data-counter="17820" data-suffix="">$17.820</div>
+        </div>
+        <div class="closing-savings-label">
+          <strong>ahorrados cada año</strong>
+          pasando de $22.080 a $4.260 USD anuales
+        </div>
+      </div>
+
+      <div class="closing-cta">
+        <button class="btn btn--closing-primary" onclick="window.print()">
+          📄 Descargar propuesta
+        </button>
+        <a href="mailto:tech@veritas.cl?subject=VeriSmart Migración - Aprobación" class="btn btn--closing-ghost">
+          ✉️ Aprobar migración
+        </a>
+      </div>
+
+      <p style="font-size:var(--text-xs);color:rgba(255,255,255,.3);margin-top:var(--space-8);max-width:none;">
+        Presentación preparada para revisión interna · Veritas.cl · 2025
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────── SCRIPTS ───────────────── -->
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>

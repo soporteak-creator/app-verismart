@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veritas.cl · Pitch Decks</title>
+  <link rel="stylesheet" href="shared/css/base.css" />
+  <style>
+    body { background: var(--color-bg); }
+
+    .landing-nav {
+      padding: var(--space-6) var(--section-pad-x);
+      display: flex; align-items: center;
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-surface);
+    }
+    .landing-logo {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      color: #1B3F8B;
+    }
+    .landing-logo span { opacity: .4; margin: 0 var(--space-2); }
+
+    .landing-hero {
+      padding: var(--space-24) var(--section-pad-x) var(--space-16);
+      max-width: var(--container-max);
+      margin-inline: auto;
+    }
+    .landing-hero .label { margin-bottom: var(--space-4); }
+    .landing-hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      margin-bottom: var(--space-4);
+    }
+    .landing-hero p {
+      font-size: var(--text-lg);
+      color: var(--color-text-muted);
+    }
+
+    .presentations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: var(--space-6);
+      max-width: var(--container-max);
+      margin-inline: auto;
+      padding: 0 var(--section-pad-x) var(--space-24);
+    }
+
+    .pres-card {
+      background: var(--color-surface);
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      transition: all 300ms cubic-bezier(.16,1,.3,1);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      box-shadow: var(--shadow-sm);
+    }
+    .pres-card:hover {
+      transform: translateY(-6px);
+      border-color: #1B3F8B;
+      box-shadow: var(--shadow-lg);
+    }
+    .pres-card__cover {
+      height: 180px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-size: 4rem;
+      font-weight: 700;
+      letter-spacing: -.04em;
+      position: relative;
+      overflow: hidden;
+    }
+    .pres-card__cover--verismart {
+      background: linear-gradient(135deg, #0C1D4A 0%, #1B3F8B 60%, #2A5CC5 100%);
+      color: rgba(255,255,255,.12);
+    }
+    .pres-card__cover--verismart::after {
+      content: 'VS';
+      position: absolute;
+      font-size: 8rem;
+      color: rgba(255,255,255,.06);
+      bottom: -20px;
+      right: 10px;
+    }
+    .pres-card__cover-badge {
+      position: absolute;
+      top: var(--space-4); left: var(--space-4);
+      background: rgba(255,255,255,.15);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 100px;
+      border: 1px solid rgba(255,255,255,.2);
+    }
+    .pres-card__cover-icon {
+      font-size: 3rem;
+      position: relative;
+      z-index: 1;
+    }
+    .pres-card__body { padding: var(--space-6); }
+    .pres-card__meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+    .pres-card__title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+    }
+    .pres-card__desc {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      line-height: 1.6;
+      max-width: none;
+    }
+    .pres-card__footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-4) var(--space-6);
+      border-top: 1px solid var(--color-border);
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+    .pres-card__cta {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: #1B3F8B;
+      display: flex; align-items: center; gap: 4px;
+    }
+
+    /* placeholder card */
+    .pres-card--placeholder {
+      background: var(--color-surface-2);
+      border: 2px dashed var(--color-border);
+      box-shadow: none;
+    }
+    .pres-card--placeholder:hover {
+      transform: none;
+      border-color: #1B3F8B;
+      box-shadow: none;
+    }
+    .pres-card--placeholder .pres-card__cover {
+      background: transparent;
+      color: var(--color-text-muted);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .pres-card { animation: fadeInUp .5s var(--ease-out) both; }
+    .pres-card:nth-child(1) { animation-delay: .1s; }
+    .pres-card:nth-child(2) { animation-delay: .2s; }
+    .pres-card:nth-child(3) { animation-delay: .3s; }
+  </style>
+</head>
+<body>
+
+<nav class="landing-nav">
+  <div class="landing-logo">Veritas <span>/</span> Presentaciones</div>
+</nav>
+
+<div class="landing-hero">
+  <div class="label label--accent">Centro de presentaciones</div>
+  <h1>Pitch Decks interactivos</h1>
+  <p>Selecciona una presentación para ver la propuesta completa.</p>
+</div>
+
+<div class="presentations-grid">
+
+  <!-- VeriSmart -->
+  <a href="brands/verismart/index.html" class="pres-card">
+    <div class="pres-card__cover pres-card__cover--verismart">
+      <span class="pres-card__cover-badge">Infraestructura</span>
+      <span class="pres-card__cover-icon">🚀</span>
+    </div>
+    <div class="pres-card__body">
+      <div class="pres-card__meta">
+        <span class="badge badge--accent">Técnico</span>
+        <span class="badge badge--success">Listo</span>
+      </div>
+      <div class="pres-card__title">VeriSmart · Migración de Servidor</div>
+      <p class="pres-card__desc">
+        Propuesta para migrar VeriSmart de AWS a Railway. Stack Vue.js + Node.js +
+        MongoDB + Docker. Ahorro proyectado: $17.820 USD/año.
+      </p>
+    </div>
+    <div class="pres-card__footer">
+      <span>7 secciones · 2025</span>
+      <span class="pres-card__cta">Ver presentación →</span>
+    </div>
+  </a>
+
+  <!-- Placeholder 2 -->
+  <div class="pres-card pres-card--placeholder">
+    <div class="pres-card__cover">
+      <span style="font-size:3rem;">+</span>
+    </div>
+    <div class="pres-card__body">
+      <div class="pres-card__meta">
+        <span class="badge badge--warning">Próximamente</span>
+      </div>
+      <div class="pres-card__title">Nueva presentación</div>
+      <p class="pres-card__desc">
+        Agrega nuevas presentaciones creando una carpeta en
+        <code style="font-size:11px;background:var(--color-surface-2);padding:2px 6px;border-radius:4px;">/brands/nombre/</code>
+        y enlazando desde este index.
+      </p>
+    </div>
+    <div class="pres-card__footer">
+      <span>Plantilla disponible</span>
+      <span class="pres-card__cta" style="color:var(--color-text-muted);">Próximamente</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

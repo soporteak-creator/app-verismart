@@ -1,0 +1,133 @@
+{
+  "brand": {
+    "name": "VeriSmart",
+    "tagline": "La plataforma interna de Veritas",
+    "description": "Sistema de gestión inteligente para clientes internos y externos de Veritas.cl",
+    "color_accent": "#1B4FD8",
+    "color_highlight": "#F59E0B",
+    "logo_text": "VS"
+  },
+  "stack_actual": {
+    "frontend": { "name": "Vue.js 3", "version": "3.4", "icon": "⬡" },
+    "backend":  { "name": "Node.js", "version": "20 LTS", "icon": "⬡" },
+    "database": { "name": "MongoDB", "version": "7.x", "icon": "🍃" },
+    "infra":    { "name": "AWS (EC2 + RDS)", "icon": "☁️" },
+    "container":{ "name": "Docker / Compose", "icon": "🐳" }
+  },
+  "problem_metrics": {
+    "aws_monthly_cost": 1840,
+    "aws_annual_cost": 22080,
+    "avg_latency_ms": 280,
+    "uptime_pct": 97.2,
+    "deploy_time_min": 18,
+    "cold_start_sec": 4.2
+  },
+  "providers": [
+    {
+      "id": "aws",
+      "name": "AWS EC2 + RDS",
+      "monthly_usd": 1840,
+      "latency_ms": 280,
+      "uptime_pct": 99.5,
+      "support": "Pago (Business $100/mes)",
+      "region_latam": false,
+      "docker_native": false,
+      "mongodb_managed": false,
+      "current": true,
+      "highlight": false,
+      "pros": ["Ecosistema maduro", "Alta disponibilidad global"],
+      "cons": ["Costo elevado para el tamaño del proyecto", "Sin región Chile/LatAm", "Complejidad operacional alta", "Cold starts en Lambda"]
+    },
+    {
+      "id": "railway",
+      "name": "Railway",
+      "monthly_usd": 340,
+      "latency_ms": 95,
+      "uptime_pct": 99.9,
+      "support": "Community + Discord activo",
+      "region_latam": true,
+      "docker_native": true,
+      "mongodb_managed": false,
+      "current": false,
+      "highlight": true,
+      "pros": ["Deploy desde Docker Compose directo", "Región São Paulo (LatAm)", "Precios predecibles", "DX excelente", "Escala automática"],
+      "cons": ["MongoDB requiere servicio externo (Atlas Free/Shared)", "Menos opciones enterprise"]
+    },
+    {
+      "id": "render",
+      "name": "Render",
+      "monthly_usd": 420,
+      "latency_ms": 110,
+      "uptime_pct": 99.8,
+      "support": "Email + Docs",
+      "region_latam": false,
+      "docker_native": true,
+      "mongodb_managed": false,
+      "current": false,
+      "highlight": false,
+      "pros": ["Docker nativo", "Deploy automático desde Git", "SSL gratuito", "Preview environments"],
+      "cons": ["Sin región LatAm (Oregon)", "Spin-down en plan gratuito"]
+    },
+    {
+      "id": "fly",
+      "name": "Fly.io",
+      "monthly_usd": 290,
+      "latency_ms": 88,
+      "uptime_pct": 99.9,
+      "support": "Community + Docs",
+      "region_latam": true,
+      "docker_native": true,
+      "mongodb_managed": false,
+      "current": false,
+      "highlight": false,
+      "pros": ["Región GRU (São Paulo)", "Deploy con Dockerfile", "Precios muy bajos", "Anycast routing"],
+      "cons": ["Curva de aprendizaje CLI", "MongoDB externo necesario"]
+    },
+    {
+      "id": "atlas_railway",
+      "name": "Railway + MongoDB Atlas",
+      "monthly_usd": 355,
+      "latency_ms": 92,
+      "uptime_pct": 99.95,
+      "support": "Ambos tienen soporte activo",
+      "region_latam": true,
+      "docker_native": true,
+      "mongodb_managed": true,
+      "current": false,
+      "highlight": false,
+      "pros": ["MongoDB gestionado y escalable", "Backups automáticos", "Mejor combinación precio/performance"],
+      "cons": ["Dos proveedores a gestionar", "Latencia inter-servicio mínima"]
+    }
+  ],
+  "savings": {
+    "current_annual": 22080,
+    "proposed_annual": 4260,
+    "savings_annual": 17820,
+    "savings_pct": 80.7
+  },
+  "migration_phases": [
+    {
+      "phase": 1,
+      "title": "Preparación",
+      "duration": "1 semana",
+      "tasks": ["Audit de variables de entorno", "Dockerizar correctamente todos los servicios", "Configurar MongoDB Atlas (migración de datos)"]
+    },
+    {
+      "phase": 2,
+      "title": "Staging en Railway",
+      "duration": "1 semana",
+      "tasks": ["Deploy del stack completo en Railway staging", "Pruebas de integración", "Validar performance y latencia"]
+    },
+    {
+      "phase": 3,
+      "title": "Cutover",
+      "duration": "1 día",
+      "tasks": ["Redirect de DNS", "Deploy en producción Railway", "Monitoreo activo 48h post-migración"]
+    }
+  ],
+  "growth_chart": {
+    "labels": ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+    "aws_cost":     [1840, 1840, 1920, 1980, 2010, 2100, 2150, 2200, 2280, 2300, 2400, 2460],
+    "railway_cost": [320,  320,  325,  330,  335,  340,  340,  345,  350,  355,  355,  360]
+  }
+}
