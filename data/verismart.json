@@ -1,133 +1,207 @@
 {
-  "brand": {
-    "name": "VeriSmart",
-    "tagline": "La plataforma interna de Veritas",
-    "description": "Sistema de gestión inteligente para clientes internos y externos de Veritas.cl",
-    "color_accent": "#1B4FD8",
-    "color_highlight": "#F59E0B",
-    "logo_text": "VS"
+  "brand": "VeriSmart",
+  "client": "Veritas.cl",
+  "tagline": "Infraestructura inteligente para una plataforma que lo merece",
+  "hero": {
+    "title": "VeriSmart",
+    "subtitle": "Propuesta de migración y evolución tecnológica",
+    "description": "Un análisis profundo del estado actual, los riesgos de seguir en AWS Lightsail y el camino óptimo hacia una infraestructura moderna, escalable y rentable."
   },
-  "stack_actual": {
-    "frontend": { "name": "Vue.js 3", "version": "3.4", "icon": "⬡" },
-    "backend":  { "name": "Node.js", "version": "20 LTS", "icon": "⬡" },
-    "database": { "name": "MongoDB", "version": "7.x", "icon": "🍃" },
-    "infra":    { "name": "AWS (EC2 + RDS)", "icon": "☁️" },
-    "container":{ "name": "Docker / Compose", "icon": "🐳" }
+  "currentStack": {
+    "frontend": { "tech": "Vue 3", "version": "3.4", "bundler": "Vite" },
+    "backend": { "tech": "Node.js", "version": "20 LTS", "framework": "Express" },
+    "database": { "tech": "MongoDB Atlas", "plan": "Free M0", "limitGB": 0.5 },
+    "infra": { "tech": "AWS Lightsail", "plan": "Bundle $10/mo", "ram": "2 GB", "cpu": "1 vCPU", "storage": "60 GB SSD" },
+    "container": "Docker Compose (single host)"
   },
-  "problem_metrics": {
-    "aws_monthly_cost": 1840,
-    "aws_annual_cost": 22080,
-    "avg_latency_ms": 280,
-    "uptime_pct": 97.2,
-    "deploy_time_min": 18,
-    "cold_start_sec": 4.2
-  },
-  "providers": [
+  "problems": [
     {
-      "id": "aws",
-      "name": "AWS EC2 + RDS",
-      "monthly_usd": 1840,
-      "latency_ms": 280,
-      "uptime_pct": 99.5,
-      "support": "Pago (Business $100/mes)",
-      "region_latam": false,
-      "docker_native": false,
-      "mongodb_managed": false,
-      "current": true,
-      "highlight": false,
-      "pros": ["Ecosistema maduro", "Alta disponibilidad global"],
-      "cons": ["Costo elevado para el tamaño del proyecto", "Sin región Chile/LatAm", "Complejidad operacional alta", "Cold starts en Lambda"]
+      "id": "lightsail",
+      "icon": "⚡",
+      "title": "AWS Lightsail: recursos al límite",
+      "description": "El bundle actual de $10/mes entrega solo 2 GB RAM y 1 vCPU. Con Vue SSR + Node.js + MongoDB en el mismo host via Docker Compose, el servidor opera constantemente por encima del 85% de uso de memoria, causando lentitud y caídas esporádicas.",
+      "severity": "critical",
+      "metric": "85%+ RAM",
+      "metricLabel": "Uso promedio de memoria"
     },
     {
-      "id": "railway",
-      "name": "Railway",
-      "monthly_usd": 340,
-      "latency_ms": 95,
-      "uptime_pct": 99.9,
-      "support": "Community + Discord activo",
-      "region_latam": true,
-      "docker_native": true,
-      "mongodb_managed": false,
-      "current": false,
-      "highlight": true,
-      "pros": ["Deploy desde Docker Compose directo", "Región São Paulo (LatAm)", "Precios predecibles", "DX excelente", "Escala automática"],
-      "cons": ["MongoDB requiere servicio externo (Atlas Free/Shared)", "Menos opciones enterprise"]
+      "id": "mongodb",
+      "icon": "🗄️",
+      "title": "MongoDB Atlas M0: límite de almacenamiento",
+      "description": "El tier gratuito M0 de MongoDB Atlas permite solo 512 MB de almacenamiento. La base de datos de VeriSmart ya alcanzó el 90% de ese límite. El siguiente paso (M10) cuesta $57/mes adicionales, un salto desproporcionado.",
+      "severity": "critical",
+      "metric": "90%",
+      "metricLabel": "Almacenamiento utilizado"
     },
     {
-      "id": "render",
-      "name": "Render",
-      "monthly_usd": 420,
-      "latency_ms": 110,
-      "uptime_pct": 99.8,
-      "support": "Email + Docs",
-      "region_latam": false,
-      "docker_native": true,
-      "mongodb_managed": false,
-      "current": false,
-      "highlight": false,
-      "pros": ["Docker nativo", "Deploy automático desde Git", "SSL gratuito", "Preview environments"],
-      "cons": ["Sin región LatAm (Oregon)", "Spin-down en plan gratuito"]
+      "id": "docker",
+      "icon": "🐳",
+      "title": "Docker Compose en host único: sin resiliencia",
+      "description": "Todos los servicios (frontend, backend, base de datos) corren en un solo Docker Compose en una instancia. Si esa instancia falla, toda la plataforma cae. No existe load balancing, auto-scaling ni failover automático.",
+      "severity": "high",
+      "metric": "0%",
+      "metricLabel": "Redundancia actual"
     },
     {
-      "id": "fly",
-      "name": "Fly.io",
-      "monthly_usd": 290,
-      "latency_ms": 88,
-      "uptime_pct": 99.9,
-      "support": "Community + Docs",
-      "region_latam": true,
-      "docker_native": true,
-      "mongodb_managed": false,
-      "current": false,
-      "highlight": false,
-      "pros": ["Región GRU (São Paulo)", "Deploy con Dockerfile", "Precios muy bajos", "Anycast routing"],
-      "cons": ["Curva de aprendizaje CLI", "MongoDB externo necesario"]
-    },
-    {
-      "id": "atlas_railway",
-      "name": "Railway + MongoDB Atlas",
-      "monthly_usd": 355,
-      "latency_ms": 92,
-      "uptime_pct": 99.95,
-      "support": "Ambos tienen soporte activo",
-      "region_latam": true,
-      "docker_native": true,
-      "mongodb_managed": true,
-      "current": false,
-      "highlight": false,
-      "pros": ["MongoDB gestionado y escalable", "Backups automáticos", "Mejor combinación precio/performance"],
-      "cons": ["Dos proveedores a gestionar", "Latencia inter-servicio mínima"]
+      "id": "escalabilidad",
+      "icon": "📈",
+      "title": "Sin capacidad de escalar",
+      "description": "Lightsail no permite escalar verticalmente sin downtime ni escalar horizontalmente de forma nativa. En momentos de alta demanda (campañas, lanzamientos), la plataforma no puede absorber el tráfico adicional.",
+      "severity": "high",
+      "metric": "0 min",
+      "metricLabel": "Tiempo de auto-scaling"
     }
   ],
-  "savings": {
-    "current_annual": 22080,
-    "proposed_annual": 4260,
-    "savings_annual": 17820,
-    "savings_pct": 80.7
+  "comparison": {
+    "providers": ["AWS Lightsail", "Railway", "Render", "Fly.io", "DigitalOcean App Platform"],
+    "metrics": {
+      "costo_mensual": [10, 20, 25, 23, 25],
+      "ram_gb": [2, 8, 2, 8, 4],
+      "escalabilidad": [2, 9, 7, 9, 8],
+      "facilidad_deploy": [5, 9, 8, 7, 8],
+      "mongodb_incluido": [false, false, false, false, false],
+      "docker_soporte": [true, true, true, true, true]
+    },
+    "recommended": "Railway",
+    "recommendedReason": "Mejor balance costo/rendimiento, deploy desde GitHub automático, sin fricción con Docker Compose, y soporte nativo de MongoDB vía plugin con 1 GB gratis."
   },
-  "migration_phases": [
+  "kpis": [
+    { "value": 85, "unit": "%", "label": "RAM usada en Lightsail", "suffix": "" },
+    { "value": 90, "unit": "%", "label": "Storage MongoDB Atlas", "suffix": "" },
+    { "value": 10, "unit": "$", "label": "Costo mensual actual", "prefix": "$", "suffix": "/mo" },
+    { "value": 0, "unit": "", "label": "Redundancia de servicios", "suffix": "%" }
+  ],
+  "targetKpis": [
+    { "value": 40, "unit": "%", "label": "Uso de RAM proyectado", "suffix": "" },
+    { "value": 20, "unit": "%", "label": "Storage utilizado", "suffix": "" },
+    { "value": 20, "unit": "$", "label": "Costo mensual objetivo", "prefix": "$", "suffix": "/mo" },
+    { "value": 99.9, "unit": "%", "label": "Uptime garantizado", "suffix": "" }
+  ],
+  "roadmap": [
     {
       "phase": 1,
-      "title": "Preparación",
-      "duration": "1 semana",
-      "tasks": ["Audit de variables de entorno", "Dockerizar correctamente todos los servicios", "Configurar MongoDB Atlas (migración de datos)"]
+      "title": "Auditoría y Preparación",
+      "duration": "2 semanas",
+      "weeks": "Sem 1–2",
+      "color": "#1B4FD8",
+      "tasks": [
+        "Auditoría completa del Docker Compose actual",
+        "Exportación y backup de MongoDB Atlas",
+        "Análisis de variables de entorno y secretos",
+        "Documentación de arquitectura actual",
+        "Setup de cuenta Railway y proyecto"
+      ]
     },
     {
       "phase": 2,
-      "title": "Staging en Railway",
+      "title": "Migración de Base de Datos",
       "duration": "1 semana",
-      "tasks": ["Deploy del stack completo en Railway staging", "Pruebas de integración", "Validar performance y latencia"]
+      "weeks": "Sem 3",
+      "color": "#0D9488",
+      "tasks": [
+        "Provisionar MongoDB en Railway (plugin)",
+        "Importar datos desde Atlas",
+        "Validar integridad de datos",
+        "Actualizar connection strings en el backend",
+        "Tests de conectividad y performance"
+      ]
     },
     {
       "phase": 3,
-      "title": "Cutover",
-      "duration": "1 día",
-      "tasks": ["Redirect de DNS", "Deploy en producción Railway", "Monitoreo activo 48h post-migración"]
+      "title": "Deploy de Backend en Railway",
+      "duration": "1 semana",
+      "weeks": "Sem 4",
+      "color": "#7C3AED",
+      "tasks": [
+        "Configurar servicio Node.js en Railway",
+        "Conectar repositorio GitHub (CI/CD automático)",
+        "Variables de entorno y secretos en Railway",
+        "Tests de API endpoints",
+        "Configuración de dominio custom"
+      ]
+    },
+    {
+      "phase": 4,
+      "title": "Deploy de Frontend + Optimización Vue",
+      "duration": "1 semana",
+      "weeks": "Sem 5",
+      "color": "#D97706",
+      "tasks": [
+        "Build estático de Vue en Vercel (gratis, CDN global)",
+        "Configurar proxy API desde Vercel a Railway",
+        "Optimización de bundle size (lazy loading, code split)",
+        "Tests E2E completos",
+        "Mejoras de performance (Lighthouse audit)"
+      ]
+    },
+    {
+      "phase": 5,
+      "title": "Mejoras y Lanzamiento",
+      "duration": "2 semanas",
+      "weeks": "Sem 6–7",
+      "color": "#DC2626",
+      "tasks": [
+        "Implementar rate limiting y caché con Redis",
+        "Añadir monitoreo (Railway Metrics + Sentry)",
+        "Configurar alertas de uso y costo",
+        "Documentación técnica actualizada",
+        "Go-live y baja de Lightsail"
+      ]
     }
   ],
-  "growth_chart": {
-    "labels": ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
-    "aws_cost":     [1840, 1840, 1920, 1980, 2010, 2100, 2150, 2200, 2280, 2300, 2400, 2460],
-    "railway_cost": [320,  320,  325,  330,  335,  340,  340,  345,  350,  355,  355,  360]
+  "improvements": [
+    {
+      "icon": "🚀",
+      "title": "CI/CD Automático",
+      "description": "Cada push a GitHub despliega automáticamente. Cero downtime en deploys con zero-downtime rolling updates."
+    },
+    {
+      "icon": "📊",
+      "title": "Monitoreo en tiempo real",
+      "description": "Métricas de CPU, RAM, latencia y errores visibles en dashboard. Alertas proactivas antes de que algo falle."
+    },
+    {
+      "icon": "🔒",
+      "title": "Secrets seguros",
+      "description": "Variables de entorno y secretos gestionados de forma segura. Sin credenciales en el código ni en Docker Compose."
+    },
+    {
+      "icon": "⚡",
+      "title": "Frontend en CDN global",
+      "description": "Vue en Vercel: distribución en edge nodes globales. Tiempos de carga sub-segundo para usuarios en Chile y Latam."
+    },
+    {
+      "icon": "💾",
+      "title": "MongoDB con espacio real",
+      "description": "De 512 MB a 1 GB incluido, con posibilidad de escalar sin saltos de precio desproporcionados."
+    },
+    {
+      "icon": "💰",
+      "title": "Ahorro con mejor rendimiento",
+      "description": "El doble de RAM por un costo similar, con escalabilidad automática. Paga solo lo que usas."
+    }
+  ],
+  "costComparison": {
+    "current": {
+      "label": "Hoy",
+      "items": [
+        { "name": "AWS Lightsail (2GB RAM)", "cost": 10 },
+        { "name": "MongoDB Atlas M0 (gratis)", "cost": 0 },
+        { "name": "DNS / Dominio", "cost": 2 }
+      ],
+      "total": 12,
+      "note": "Con límites críticos ya alcanzados"
+    },
+    "proposed": {
+      "label": "Propuesto",
+      "items": [
+        { "name": "Railway Starter (8GB RAM)", "cost": 20 },
+        { "name": "MongoDB Railway Plugin (1GB)", "cost": 0 },
+        { "name": "Vercel Frontend (gratis)", "cost": 0 },
+        { "name": "DNS / Dominio", "cost": 2 }
+      ],
+      "total": 22,
+      "note": "4× más RAM, CI/CD, escalabilidad"
+    }
   }
 }

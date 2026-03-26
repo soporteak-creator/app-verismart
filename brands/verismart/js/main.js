@@ -1,383 +1,333 @@
-/* =============================================================
-   VERISMART / MAIN.JS — GSAP + ScrollTrigger animations
-   ============================================================= */
+/* =========================================
+   main.js – Lógica VeriSmart Pitch
+   ========================================= */
 
 'use strict';
 
-import {
-  initProgressBar,
-  initCounters,
-  initVideoAutoplay,
-  initVideoHover,
-  initNav,
-  initSmoothScroll,
-  initChartOnScroll
-} from '../../../shared/js/core.js';
-
-/* ── Data ── */
 let data = null;
 
+/* =========================================
+   DATA LOADING
+   ========================================= */
 async function loadData() {
-  const res  = await fetch('../../../data/verismart.json');
-  data = await res.json();
+  try {
+    const res = await fetch('/data/verismart.json');
+    data = await res.json();
+    buildPage();
+  } catch (e) {
+    console.warn('Data load failed, using inline fallback');
+    buildPage();
+  }
 }
 
-/* ── GSAP setup ── */
-function setupGSAP() {
-  const { gsap, ScrollTrigger } = window;
+/* =========================================
+   PAGE BUILDER
+   ========================================= */
+function buildPage() {
+  buildComparison();
+  buildRoadmap();
+  buildCostCards();
+  buildImprovements();
+  initAnimations();
+  staggerReveal('.hero__content > *', 160);
+}
+
+/* ---- Comparison Table ---- */
+function buildComparison() {
+  const tbody = document.getElementById('comparison-tbody');
+  if (!tbody || !data) return;
+
+  const metrics = [
+    { key: 'costo_mensual', label: 'Costo mensual (USD)', format: v => '$' + v + '/mo' },
+    { key: 'ram_gb', label: 'RAM disponible', format: v => v + ' GB' },
+    { key: 'escalabilidad', label: 'Escalabilidad (0-10)', format: v => v + '/10' },
+    { key: 'facilidad_deploy', label: 'Facilidad de deploy (0-10)', format: v => v + '/10' },
+    { key: 'docker_soporte', label: 'Soporte Docker', format: v => v ? '<span class="check">✓</span>' : '<span class="cross">✗</span>' },
+  ];
+
+  const providers = data.comparison.providers;
+  const mData = data.comparison.metrics;
+  const recommended = data.comparison.recommended;
+  const recIdx = providers.indexOf(recommended);
+
+  metrics.forEach(metric => {
+    const tr = document.createElement('tr');
+    let html = `<td style="font-weight:600;color:var(--text-primary)">${metric.label}</td>`;
+    providers.forEach((p, i) => {
+      const val = mData[metric.key][i];
+      const isRec = i === recIdx;
+      html += `<td class="${isRec ? 'highlight' : ''}">${metric.format(val)}</td>`;
+    });
+    tr.innerHTML = html;
+    tbody.appendChild(tr);
+  });
+
+  // Header recommended badge
+  const ths = document.querySelectorAll('#comparison-thead th');
+  ths.forEach((th, i) => {
+    if (i > 0 && providers[i - 1] === recommended) {
+      th.classList.add('highlight');
+      th.innerHTML += ' <span style="font-size:0.65rem;display:block;font-weight:500;opacity:0.85">★ Recomendado</span>';
+    }
+  });
+}
+
+/* ---- Roadmap ---- */
+function buildRoadmap() {
+  const container = document.getElementById('roadmap-container');
+  if (!container || !data) return;
+
+  data.roadmap.forEach((phase, idx) => {
+    const item = document.createElement('div');
+    item.className = 'roadmap__item';
+    item.style.setProperty('--phase-color', phase.color);
+
+    const tasksHTML = phase.tasks.map(t =>
+      `<div class="roadmap__task">${t}</div>`
+    ).join('');
+
+    item.innerHTML = `
+      <div class="roadmap__dot" style="background:${phase.color};box-shadow:0 0 0 3px ${phase.color}40"></div>
+      <div class="roadmap__weeks">${phase.weeks} · ${phase.duration}</div>
+      <div class="phase-pill" style="background:${phase.color}">Fase ${phase.phase}: ${phase.title}</div>
+      <div class="roadmap__tasks mt-xl">${tasksHTML}</div>
+    `;
+    container.appendChild(item);
+  });
+
+  // Re-init roadmap observer (data was injected after DOMContentLoaded)
+  if (typeof initRoadmap === 'function') initRoadmap();
+}
+
+/* ---- Cost Cards ---- */
+function buildCostCards() {
+  if (!data) return;
+  renderCostCard('cost-current', data.costComparison.current, false);
+  renderCostCard('cost-proposed', data.costComparison.proposed, true);
+}
+
+function renderCostCard(id, costData, isProposed) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  const itemsHTML = costData.items.map(item => `
+    <div class="cost-item">
+      <span class="cost-item__name">${item.name}</span>
+      <span class="cost-item__amount">${item.cost === 0 ? 'Gratis' : '$' + item.cost + '/mo'}</span>
+    </div>
+  `).join('');
+
+  el.innerHTML = `
+    <div class="cost-card__header">
+      <span>${costData.label}</span>
+      ${isProposed ? '<span class="badge badge--success">Propuesto</span>' : '<span class="badge badge--danger">Actual</span>'}
+    </div>
+    <div class="cost-card__items">${itemsHTML}</div>
+    <div class="cost-total">
+      <span class="cost-total__label">Total mensual</span>
+      <span class="cost-total__value">$${costData.total}<span style="font-size:1rem;font-weight:500">/mo</span></span>
+    </div>
+    <p class="cost-note">${costData.note}</p>
+  `;
+}
+
+/* ---- Improvements ---- */
+function buildImprovements() {
+  const grid = document.getElementById('improvements-grid');
+  if (!grid || !data) return;
+
+  data.improvements.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'improvement-card will-change';
+    card.innerHTML = `
+      <div class="improvement-card__icon">${item.icon}</div>
+      <div class="improvement-card__title">${item.title}</div>
+      <div class="improvement-card__desc">${item.description}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* =========================================
+   GSAP ANIMATIONS
+   ========================================= */
+function initAnimations() {
+  if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+    console.warn('GSAP not loaded');
+    return;
+  }
+
   gsap.registerPlugin(ScrollTrigger);
 
-  /* ─ Hero entrance ─ */
-  const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-  heroTl
-    .from('.hero__eyebrow',  { y: 24, opacity: 0, duration: .7 })
-    .from('.hero__title',    { y: 40, opacity: 0, duration: .9 }, '-=.4')
-    .from('.hero__subtitle', { y: 30, opacity: 0, duration: .7 }, '-=.5')
-    .from('.hero__actions',  { y: 20, opacity: 0, duration: .6 }, '-=.4')
-    .from('.hero__scroll-hint', { opacity: 0, duration: .5 }, '-=.2');
-
-  /* ─ Generic fade-up on sections ─ */
-  gsap.utils.toArray('.fade-up').forEach(el => {
-    gsap.to(el, {
-      y: 0, opacity: 1, duration: .8, ease: 'power3.out',
-      scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' }
-    });
-  });
-
-  gsap.utils.toArray('.slide-left').forEach(el => {
-    gsap.to(el, {
-      x: 0, opacity: 1, duration: .8, ease: 'power3.out',
-      scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' }
-    });
-  });
-
-  gsap.utils.toArray('.slide-right').forEach(el => {
-    gsap.to(el, {
-      x: 0, opacity: 1, duration: .8, ease: 'power3.out',
-      scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' }
-    });
-  });
-
-  gsap.utils.toArray('.fade-in').forEach(el => {
-    gsap.to(el, {
-      opacity: 1, duration: .9, ease: 'power2.out',
-      scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' }
-    });
-  });
-
-  /* ─ Stagger for grid children ─ */
-  document.querySelectorAll('.stagger-children').forEach(parent => {
-    gsap.from(parent.children, {
-      y: 32, opacity: 0, duration: .7, stagger: .1, ease: 'power3.out',
-      scrollTrigger: { trigger: parent, start: 'top 82%', toggleActions: 'play none none none' }
-    });
-  });
-
-  /* ─ Problem section — pinned ─ */
-  const problemSection = document.querySelector('#problem');
-  if (problemSection) {
-    ScrollTrigger.create({
-      trigger: problemSection,
-      start: 'top top',
-      end: '+=400',
-      pin: false,
-    });
-
-    gsap.from('.problem-item', {
-      x: -40, opacity: 0, duration: .6, stagger: .12, ease: 'power3.out',
-      scrollTrigger: {
-        trigger: '.problem-list',
-        start: 'top 80%',
-        toggleActions: 'play none none none'
-      }
-    });
-  }
-
-  /* ─ Stack layers stagger ─ */
-  gsap.from('.stack-layer', {
-    y: 30, opacity: 0, duration: .6, stagger: .08, ease: 'power3.out',
-    scrollTrigger: {
-      trigger: '.stack-diagram',
-      start: 'top 82%',
-      toggleActions: 'play none none none'
-    }
-  });
-
-  /* ─ Code block ─ */
-  gsap.from('.code-block', {
-    y: 40, opacity: 0, duration: .9, ease: 'power3.out',
-    scrollTrigger: {
-      trigger: '.code-block',
-      start: 'top 85%',
-      toggleActions: 'play none none none'
-    }
-  });
-
-  /* ─ Comparison table rows ─ */
-  gsap.from('.compare-table tbody tr', {
-    opacity: 0, x: -20, duration: .4, stagger: .06, ease: 'power2.out',
-    scrollTrigger: {
-      trigger: '.compare-table',
-      start: 'top 80%',
-      toggleActions: 'play none none none'
-    }
-  });
-
-  /* ─ Migration phases ─ */
-  gsap.from('.migration-phase', {
-    opacity: 0, y: 30, duration: .6, stagger: .15, ease: 'power3.out',
-    scrollTrigger: {
-      trigger: '.migration-timeline',
-      start: 'top 80%',
-      toggleActions: 'play none none none'
-    }
-  });
-
-  /* ─ Savings strip ─ */
-  gsap.from('.savings-stat', {
-    scale: .85, opacity: 0, duration: .6, stagger: .1, ease: 'back.out(1.6)',
-    scrollTrigger: {
-      trigger: '.savings-strip',
-      start: 'top 82%',
-      toggleActions: 'play none none none'
-    }
-  });
-
-  /* ─ Closing section ─ */
-  const closingSection = document.querySelector('#closing');
-  if (closingSection) {
-    const closingTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: closingSection,
-        start: 'top 70%',
-        toggleActions: 'play none none none'
-      }
-    });
-    closingTl
-      .from('.closing-logo',         { scale: 1.3, opacity: 0, duration: 1, ease: 'power3.out' })
-      .from('.closing-content > *',  { y: 30, opacity: 0, duration: .7, stagger: .12, ease: 'power3.out' }, '-=.5');
-  }
-
-  /* ─ KPI cards ─ */
-  gsap.from('.kpi-card', {
-    scale: .92, opacity: 0, duration: .6, stagger: .08, ease: 'back.out(1.4)',
-    scrollTrigger: {
-      trigger: '.kpi-grid',
-      start: 'top 82%',
-      toggleActions: 'play none none none'
-    }
-  });
-}
-
-/* ── Chart ── */
-function createCostChart(canvas) {
-  if (!data || !window.Chart) return;
-  const chart = data.growth_chart;
-  new window.Chart(canvas, {
-    type: 'line',
-    data: {
-      labels: chart.labels,
-      datasets: [
-        {
-          label: 'AWS (actual)',
-          data: chart.aws_cost,
-          borderColor: '#EF4444',
-          backgroundColor: 'rgba(239,68,68,.08)',
-          borderWidth: 2.5,
-          tension: 0.4,
-          fill: true,
-          pointRadius: 4,
-          pointBackgroundColor: '#EF4444',
-        },
-        {
-          label: 'Railway (propuesto)',
-          data: chart.railway_cost,
-          borderColor: '#1B3F8B',
-          backgroundColor: 'rgba(27,63,139,.08)',
-          borderWidth: 2.5,
-          tension: 0.4,
-          fill: true,
-          pointRadius: 4,
-          pointBackgroundColor: '#1B3F8B',
+  // ---- Generic fade-in sections ----
+  gsap.utils.toArray('.gsap-fade-up').forEach(el => {
+    gsap.fromTo(el,
+      { opacity: 0, y: 40 },
+      {
+        opacity: 1, y: 0,
+        duration: 0.9,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 85%',
+          toggleActions: 'play none none none',
         }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { intersect: false, mode: 'index' },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#0C1D4A',
-          titleColor: '#fff',
-          bodyColor: 'rgba(255,255,255,.7)',
-          padding: 12,
-          cornerRadius: 8,
-          callbacks: {
-            label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()} USD`
+      }
+    );
+  });
+
+  // ---- Stagger children ----
+  gsap.utils.toArray('.gsap-stagger').forEach(parent => {
+    const children = parent.children;
+    gsap.fromTo(children,
+      { opacity: 0, y: 30 },
+      {
+        opacity: 1, y: 0,
+        stagger: 0.12,
+        duration: 0.7,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: parent,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        }
+      }
+    );
+  });
+
+  // ---- Pin: Problem Section ----
+  const problemSection = document.querySelector('#section-problems');
+  if (problemSection) {
+    const problemCards = problemSection.querySelectorAll('.problem-card');
+    problemCards.forEach((card, i) => {
+      gsap.fromTo(card,
+        { opacity: 0, x: -30 },
+        {
+          opacity: 1, x: 0,
+          duration: 0.7,
+          delay: i * 0.1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
           }
         }
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(0,0,0,.05)' },
-          ticks: { color: '#6B6860', font: { family: 'DM Sans', size: 12 } }
-        },
-        y: {
-          grid: { color: 'rgba(0,0,0,.05)' },
-          ticks: {
-            color: '#6B6860',
-            font: { family: 'DM Sans', size: 12 },
-            callback: v => '$' + v.toLocaleString()
-          },
-          beginAtZero: true
+      );
+    });
+  }
+
+  // ---- Pin: KPI Section ----
+  const kpiSection = document.querySelector('#section-kpis');
+  if (kpiSection) {
+    ScrollTrigger.create({
+      trigger: kpiSection,
+      start: 'top top',
+      end: '+=600',
+      pin: true,
+      scrub: 1,
+    });
+
+    gsap.fromTo(kpiSection.querySelectorAll('.kpi-card'),
+      { opacity: 0, scale: 0.92, y: 20 },
+      {
+        opacity: 1, scale: 1, y: 0,
+        stagger: 0.12,
+        ease: 'back.out(1.7)',
+        scrollTrigger: {
+          trigger: kpiSection,
+          start: 'top 70%',
+          toggleActions: 'play none none none',
         }
       }
-    }
+    );
+  }
+
+  // ---- Comparison table rows ----
+  const tableRows = document.querySelectorAll('#comparison-tbody tr');
+  tableRows.forEach((row, i) => {
+    gsap.fromTo(row,
+      { opacity: 0, x: -20 },
+      {
+        opacity: 1, x: 0,
+        delay: i * 0.08,
+        duration: 0.5,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: row,
+          start: 'top 90%',
+          toggleActions: 'play none none none',
+        }
+      }
+    );
   });
-}
 
-/* ── Build DOM from data ── */
-function buildPage() {
-  /* Stack layers */
-  const stackDiagram = document.querySelector('.stack-diagram');
-  if (stackDiagram && data) {
-    const layers = [
-      data.stack_actual.frontend,
-      data.stack_actual.backend,
-      data.stack_actual.database,
-      data.stack_actual.container,
-      data.stack_actual.infra,
-    ];
-    stackDiagram.innerHTML = layers.map((l, i) => `
-      <div class="stack-layer">
-        <div class="stack-layer__icon">${l.icon}</div>
-        <div class="stack-layer__name">${l.name}</div>
-        ${l.version ? `<span class="stack-layer__version">v${l.version}</span>` : ''}
-      </div>
-      ${i < layers.length - 1 ? '<span class="stack-arrow">→</span>' : ''}
-    `).join('');
+  // ---- Pin: Closing section ----
+  const closingSection = document.querySelector('#section-closing');
+  if (closingSection) {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: closingSection,
+        start: 'top top',
+        end: '+=800',
+        pin: true,
+        scrub: 1,
+      }
+    });
+
+    tl.fromTo('.closing-logo', { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.4 })
+      .fromTo('.closing-tagline', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3 }, 0.3)
+      .fromTo('.closing-cta', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 }, 0.5);
   }
 
-  /* KPI counters (problem section) */
-  const problemMetrics = document.getElementById('problem-metrics');
-  if (problemMetrics && data) {
-    const m = data.problem_metrics;
-    problemMetrics.innerHTML = `
-      <div class="kpi-card">
-        <span class="kpi-value" data-counter="${m.aws_monthly_cost}" data-suffix="" id="ctr-aws">0</span>
-        <span class="kpi-label">Costo mensual AWS (USD)</span>
-        <span class="kpi-delta kpi-delta--down">↑ Sube cada mes</span>
-      </div>
-      <div class="kpi-card">
-        <span class="kpi-value" data-counter="${m.avg_latency_ms}" data-suffix="ms" id="ctr-lat">0ms</span>
-        <span class="kpi-label">Latencia promedio (usuarios CL)</span>
-        <span class="kpi-delta kpi-delta--down">↑ Alta para LatAm</span>
-      </div>
-      <div class="kpi-card">
-        <span class="kpi-value" data-counter="${m.uptime_pct}" data-suffix="%" id="ctr-up">0%</span>
-        <span class="kpi-label">Uptime reportado</span>
-        <span class="kpi-delta kpi-delta--down">↓ Bajo el SLA objetivo</span>
-      </div>
-      <div class="kpi-card">
-        <span class="kpi-value" data-counter="${m.deploy_time_min}" data-suffix="min" id="ctr-deploy">0min</span>
-        <span class="kpi-label">Tiempo de deploy</span>
-        <span class="kpi-delta kpi-delta--down">↑ Muy lento para iteración</span>
-      </div>
-    `;
+  // ---- Improvement cards stagger ----
+  const impGrid = document.getElementById('improvements-grid');
+  if (impGrid) {
+    gsap.fromTo(impGrid.children,
+      { opacity: 0, y: 30 },
+      {
+        opacity: 1, y: 0,
+        stagger: 0.1,
+        duration: 0.6,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: impGrid,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        }
+      }
+    );
   }
 
-  /* Comparison table */
-  const compTable = document.querySelector('.compare-table tbody');
-  if (compTable && data) {
-    const rows = [
-      { label: 'Costo mensual (USD)', key: 'monthly_usd', fmt: v => `$${v.toLocaleString()}` },
-      { label: 'Latencia (Chile)', key: 'latency_ms', fmt: v => `~${v}ms` },
-      { label: 'Uptime SLA', key: 'uptime_pct', fmt: v => `${v}%` },
-      { label: 'Región LatAm', key: 'region_latam', fmt: v => v ? '<span class="check">✓</span>' : '<span class="cross">✗</span>' },
-      { label: 'Docker nativo', key: 'docker_native', fmt: v => v ? '<span class="check">✓</span>' : '<span class="cross">✗</span>' },
-      { label: 'MongoDB gestionado', key: 'mongodb_managed', fmt: v => v ? '<span class="check">✓</span>' : '<span class="cross">✗</span>' },
-      { label: 'Soporte', key: 'support', fmt: v => v },
-    ];
+  // ---- Stack layers ----
+  gsap.fromTo('.stack-layer',
+    { opacity: 0, x: -30 },
+    {
+      opacity: 1, x: 0,
+      stagger: 0.1,
+      duration: 0.6,
+      ease: 'power2.out',
+      scrollTrigger: {
+        trigger: '.stack-diagram',
+        start: 'top 80%',
+        toggleActions: 'play none none none',
+      }
+    }
+  );
 
-    const providers = data.providers;
-    compTable.innerHTML = rows.map(row => `
-      <tr>
-        <td><strong>${row.label}</strong></td>
-        ${providers.map(p => `
-          <td class="${p.highlight ? 'highlight' : ''} ${p.current ? 'current-provider' : ''}">
-            ${row.fmt(p[row.key])}
-          </td>
-        `).join('')}
-      </tr>
-    `).join('');
-  }
-
-  /* Savings strip */
-  const savingsStrip = document.querySelector('.savings-strip');
-  if (savingsStrip && data) {
-    const s = data.savings;
-    savingsStrip.innerHTML = `
-      <div class="savings-stat">
-        <span class="savings-stat__value" data-counter="${s.savings_pct}" data-suffix="%" >0%</span>
-        <span class="savings-stat__label">Ahorro en infraestructura</span>
-      </div>
-      <div class="savings-stat">
-        <span class="savings-stat__value" data-counter="${s.savings_annual}" data-suffix="" >0</span>
-        <span class="savings-stat__label">USD ahorrados al año</span>
-      </div>
-      <div class="savings-stat">
-        <span class="savings-stat__value" data-counter="${s.proposed_annual}" data-suffix="" >0</span>
-        <span class="savings-stat__label">Nuevo costo anual (USD)</span>
-      </div>
-    `;
-  }
-
-  /* Migration timeline */
-  const migTimeline = document.querySelector('.migration-timeline');
-  if (migTimeline && data) {
-    migTimeline.innerHTML = data.migration_phases.map(phase => `
-      <div class="migration-phase fade-up">
-        <div class="migration-phase__number">${phase.phase}</div>
-        <div class="migration-phase__content">
-          <div class="migration-phase__title">${phase.title}</div>
-          <div class="migration-phase__duration">⏱ ${phase.duration}</div>
-          <div class="migration-phase__tasks">
-            ${phase.tasks.map(t => `<div class="migration-phase__task">${t}</div>`).join('')}
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  /* Closing savings amount */
-  const closingAmount = document.querySelector('.closing-savings-amount');
-  if (closingAmount && data) {
-    closingAmount.dataset.counter = data.savings.savings_annual;
-    closingAmount.textContent = '0';
+  // ---- Chart init ----
+  if (typeof initGrowthChart === 'function') {
+    initGrowthChart(
+      'resource-chart',
+      ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul'],
+      [55, 62, 69, 74, 79, 84, 90],
+      'Uso de recursos (%)',
+      '#E53E3E'
+    );
   }
 }
 
-/* ── Init ── */
-async function init() {
-  await loadData();
-  buildPage();
-
-  initProgressBar();
-  initCounters();
-  initVideoAutoplay();
-  initVideoHover();
-  initNav();
-  initSmoothScroll();
-  initChartOnScroll('cost-chart', createCostChart);
-
-  // Wait for GSAP to be available
-  if (window.gsap && window.ScrollTrigger) {
-    setupGSAP();
-  } else {
-    window.addEventListener('load', setupGSAP);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', init);
+/* =========================================
+   INIT
+   ========================================= */
+document.addEventListener('DOMContentLoaded', loadData);
