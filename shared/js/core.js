@@ -1,92 +1,87 @@
 /* =========================================
-   core.js – Funciones compartidas VeriSmart
+   VERISMART PITCH — CORE.JS
+   Shared functions: counters, video, progress
    ========================================= */
 
 'use strict';
 
-/* ---- Progress Bar ---- */
+/* === Progress Bar === */
 function initProgressBar() {
   const bar = document.getElementById('progress-bar');
   if (!bar) return;
-
   window.addEventListener('scroll', () => {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    const scrolled = window.scrollY;
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = total > 0 ? (scrolled / total) * 100 : 0;
     bar.style.width = pct + '%';
   }, { passive: true });
 }
 
-/* ---- Animated Counter ---- */
-function animateCounter(el, target, duration = 1800, suffix = '', prefix = '') {
-  const isFloat = target % 1 !== 0;
-  const startTime = performance.now();
-
-  function update(now) {
-    const elapsed = now - startTime;
+/* === Animated Counter === */
+function animateCounter(el, from, to, duration, decimals, suffix, prefix) {
+  const start = performance.now();
+  const update = (now) => {
+    const elapsed = now - start;
     const progress = Math.min(elapsed / duration, 1);
-    // Ease out cubic
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const current = isFloat
-      ? (eased * target).toFixed(1)
-      : Math.round(eased * target);
-
-    el.textContent = prefix + current + suffix;
-
+    // ease out expo
+    const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+    const value = from + (to - from) * ease;
+    const formatted = decimals > 0 ? value.toFixed(decimals) : Math.round(value).toString();
+    el.innerHTML = (prefix || '') + formatted + '<span class="suffix">' + (suffix || '') + '</span>';
     if (progress < 1) requestAnimationFrame(update);
-  }
-
+  };
   requestAnimationFrame(update);
 }
 
-/* ---- Counter Trigger on Viewport ---- */
+/* === Init All KPI Counters === */
 function initCounters() {
-  const counters = document.querySelectorAll('[data-counter]');
-  if (!counters.length) return;
+  const cards = document.querySelectorAll('[data-counter]');
+  if (!cards.length) return;
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting && !entry.target.dataset.counted) {
         entry.target.dataset.counted = 'true';
-        const el = entry.target;
-        const target = parseFloat(el.dataset.counter);
-        const suffix = el.dataset.suffix || '';
-        const prefix = el.dataset.prefix || '';
-        const duration = parseInt(el.dataset.duration || '1800');
-        animateCounter(el, target, duration, suffix, prefix);
-      }
-    });
-  }, { threshold: 0.3 });
-
-  counters.forEach(el => observer.observe(el));
-}
-
-/* ---- Video Autoplay on Viewport ---- */
-function initVideoAutoplay() {
-  const videos = document.querySelectorAll('.phone__screen video, [data-autoplay]');
-  if (!videos.length) return;
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const video = entry.target;
-      if (entry.isIntersecting) {
-        video.play().catch(() => {});
-      } else {
-        video.pause();
+        const el = entry.target.querySelector('.kpi-card__value');
+        if (!el) return;
+        const to = parseFloat(el.dataset.value);
+        const dec = parseInt(el.dataset.decimals || '0');
+        const suf = el.dataset.suffix || '';
+        const pre = el.dataset.prefix || '';
+        animateCounter(el, 0, to, 1800, dec, suf, pre);
       }
     });
   }, { threshold: 0.4 });
 
-  videos.forEach(video => {
-    video.muted = true;
-    video.loop = true;
-    video.playsInline = true;
-    observer.observe(video);
+  cards.forEach(c => observer.observe(c));
+}
+
+/* === Video IntersectionObserver === */
+function initVideoAutoplay() {
+  const videos = document.querySelectorAll('.phone-mockup video, [data-autoplay]');
+  if (!videos.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const v = entry.target;
+      if (entry.isIntersecting) {
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    });
+  }, { threshold: 0.3 });
+
+  videos.forEach(v => {
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    observer.observe(v);
   });
 }
 
-/* ---- Video Hover on Cards ---- */
-function initVideoHover() {
+/* === Card Video Hover === */
+function initCardVideoHover() {
   const cards = document.querySelectorAll('[data-video-hover]');
   cards.forEach(card => {
     const video = card.querySelector('video');
@@ -99,131 +94,86 @@ function initVideoHover() {
   });
 }
 
-/* ---- Severity Bar Animation ---- */
-function initSeverityBars() {
-  const bars = document.querySelectorAll('.severity-bar__fill');
+/* === Score Bars Animation === */
+function initScoreBars() {
+  const bars = document.querySelectorAll('.score-fill[data-score]');
   if (!bars.length) return;
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        const fill = entry.target;
-        const target = fill.dataset.width || '0';
-        setTimeout(() => { fill.style.width = target + '%'; }, 200);
-        observer.unobserve(fill);
+        const bar = entry.target;
+        const score = bar.dataset.score;
+        setTimeout(() => { bar.style.width = score + '%'; }, 200);
+        observer.unobserve(bar);
       }
     });
   }, { threshold: 0.3 });
 
-  bars.forEach(bar => observer.observe(bar));
+  bars.forEach(b => observer.observe(b));
 }
 
-/* ---- Roadmap Animation ---- */
-function initRoadmap() {
-  const items = document.querySelectorAll('.roadmap__item');
-  if (!items.length) return;
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => {
-          entry.target.classList.add('visible');
-        }, i * 100);
-        observer.unobserve(entry.target);
-      }
+/* === Smooth Anchor Navigation === */
+function initSmoothNav() {
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-  }, { threshold: 0.15 });
-
-  items.forEach(item => observer.observe(item));
-}
-
-/* ---- Chart.js Growth Chart ---- */
-function initGrowthChart(canvasId, labels, data, label, color) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas || typeof Chart === 'undefined') return;
-
-  const observed = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) {
-      observed.disconnect();
-      createChart();
-    }
-  }, { threshold: 0.3 });
-
-  observed.observe(canvas);
-
-  function createChart() {
-    const gradient = canvas.getContext('2d').createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, color + '40');
-    gradient.addColorStop(1, color + '00');
-
-    new Chart(canvas, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label,
-          data,
-          borderColor: color,
-          backgroundColor: gradient,
-          borderWidth: 2.5,
-          fill: true,
-          tension: 0.4,
-          pointBackgroundColor: color,
-          pointRadius: 4,
-          pointHoverRadius: 7,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: { duration: 1500, easing: 'easeInOutQuart' },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'rgba(12,17,32,0.92)',
-            titleColor: '#F0F4FF',
-            bodyColor: 'rgba(240,244,255,0.7)',
-            padding: 14,
-            cornerRadius: 10,
-            borderColor: 'rgba(255,255,255,0.08)',
-            borderWidth: 1,
-          }
-        },
-        scales: {
-          x: {
-            grid: { color: 'rgba(0,0,0,0.04)' },
-            ticks: { color: '#8A9AB0', font: { size: 12 } }
-          },
-          y: {
-            grid: { color: 'rgba(0,0,0,0.04)' },
-            ticks: { color: '#8A9AB0', font: { size: 12 } }
-          }
-        }
-      }
-    });
-  }
-}
-
-/* ---- Stagger Animation on Load ---- */
-function staggerReveal(selector, delay = 120) {
-  const elements = document.querySelectorAll(selector);
-  elements.forEach((el, i) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(24px)';
-    setTimeout(() => {
-      el.style.transition = 'opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1)';
-      el.style.opacity = '1';
-      el.style.transform = 'translateY(0)';
-    }, i * delay + 100);
   });
 }
 
-/* ---- Init All ---- */
-document.addEventListener('DOMContentLoaded', () => {
+/* === Active Nav Highlight === */
+function initActiveNav() {
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.site-nav__links a[href^="#"]');
+  if (!navLinks.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+
+  sections.forEach(s => observer.observe(s));
+}
+
+/* === Load JSON Data === */
+async function loadData(path) {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error('Failed to load: ' + path);
+    return await res.json();
+  } catch (err) {
+    console.warn('Data load error:', err);
+    return null;
+  }
+}
+
+/* === Init All === */
+function initCore() {
   initProgressBar();
   initCounters();
   initVideoAutoplay();
-  initVideoHover();
-  initSeverityBars();
-  initRoadmap();
-});
+  initCardVideoHover();
+  initScoreBars();
+  initSmoothNav();
+  initActiveNav();
+}
+
+// Auto-init when DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initCore);
+} else {
+  initCore();
+}
+
+// Export for use in main.js
+window.VSCore = { loadData, animateCounter };

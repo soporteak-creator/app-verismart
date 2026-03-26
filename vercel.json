@@ -1,6 +1,13 @@
 {
   "rewrites": [
-    { "source": "/brands/:brand", "destination": "/brands/:brand/index.html" },
-    { "source": "/brands/:brand/", "destination": "/brands/:brand/index.html" }
+    { "source": "/brands/verismart", "destination": "/brands/verismart/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    }
   ]
 }

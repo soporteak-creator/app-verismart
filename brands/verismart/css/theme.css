@@ -1,277 +1,287 @@
 /* =========================================
-   theme.css – Identidad visual VeriSmart / Veritas.cl
+   VERISMART — THEME.CSS
+   Veritas.cl brand identity overrides
    ========================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
-
 :root {
-  /* Paleta Veritas – Azul institucional profundo + Teal operacional */
-  --accent-1: #1841C8;       /* Azul Veritas */
-  --accent-2: #0BA793;       /* Verde-teal confirmación */
-  --accent-3: #F59E0B;       /* Ámbar alerta */
-  --accent-danger: #E53E3E;
+  /* Veritas brand palette */
+  --color-primary: #003087;
+  --color-primary-light: #0050d4;
+  --color-primary-dark: #001a52;
+  --color-accent: #00b4d8;
+  --color-accent-2: #f4a261;
 
-  --bg-primary: #F7F9FC;
-  --bg-secondary: #EEF1F7;
-  --bg-card: #FFFFFF;
-  --bg-dark: #0B1020;
-  --bg-dark-2: #111827;
+  /* Keep clean light bg */
+  --color-bg: #f5f7fc;
+  --color-bg-3: #ecf0fa;
 
-  --text-primary: #0B1020;
-  --text-secondary: #3D4A63;
-  --text-muted: #8496B0;
-  --text-on-dark: #EDF2FF;
-
-  --border-light: rgba(24,65,200,0.07);
-  --border-medium: rgba(24,65,200,0.14);
+  /* Veritas typography feel */
+  --font-display: 'Syne', sans-serif;
 }
 
-/* ---- Hero gradient ---- */
-.hero-gradient {
-  background: linear-gradient(135deg, #0B1020 0%, #0F1F4E 55%, #1841C8 100%);
+/* === Veritas Logo Color === */
+.veritas-logo-mark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--color-primary);
+  letter-spacing: -0.04em;
+}
+.veritas-logo-mark em {
+  color: var(--color-accent);
+  font-style: normal;
 }
 
-.hero-gradient-mesh {
+/* === Hero Section === */
+#hero {
+  background: linear-gradient(135deg, #f5f7fc 0%, #e8eef9 60%, #dde7f8 100%);
+  overflow: hidden;
+}
+#hero::before {
+  content: '';
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 80% 60%, rgba(24,65,200,0.35) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 60% at 10% 80%, rgba(11,167,147,0.2) 0%, transparent 60%);
+  top: -20%;
+  right: -10%;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(0,180,216,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+#hero::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  left: -5%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(0,48,135,0.08) 0%, transparent 70%);
   pointer-events: none;
 }
 
-/* ---- Veritas logo text ---- */
-.veritas-logo {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1rem;
-  letter-spacing: -0.03em;
-  color: white;
-}
-
-.veritas-logo span {
-  color: var(--accent-2);
-}
-
-/* ---- Accent gradient text ---- */
-.gradient-text {
-  background: linear-gradient(135deg, #4B7CF3 0%, #0BA793 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ---- Section dividers ---- */
-.divider {
-  width: 48px;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-  border-radius: 2px;
-  margin: var(--space-lg) 0;
-}
-
-/* ---- Problem cards severity colors ---- */
-.problem-card[data-severity="critical"] {
-  border-left: 4px solid var(--accent-danger);
-}
-.problem-card[data-severity="high"] {
-  border-left: 4px solid var(--accent-3);
-}
-
-/* ---- Stack diagram ---- */
-.stack-layer {
-  border-radius: var(--radius-md);
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  margin-bottom: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: 1px solid;
-  transition: all var(--transition-mid);
-}
-
-.stack-layer--vue {
-  background: rgba(66,184,131,0.08);
-  border-color: rgba(66,184,131,0.25);
-  color: #1a7a50;
-}
-
-.stack-layer--node {
-  background: rgba(83,158,99,0.08);
-  border-color: rgba(83,158,99,0.25);
-  color: #2d6b3e;
-}
-
-.stack-layer--mongo {
-  background: rgba(77,179,61,0.08);
-  border-color: rgba(77,179,61,0.25);
-  color: #2a5e1f;
-}
-
-.stack-layer--docker {
-  background: rgba(13,132,225,0.08);
-  border-color: rgba(13,132,225,0.25);
-  color: #064d96;
-}
-
-.stack-layer--aws {
-  background: rgba(255,153,0,0.08);
-  border-color: rgba(255,153,0,0.25);
-  color: #8B4500;
-}
-
-.stack-layer__name {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-}
-
-.stack-layer__status {
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 50px;
-  background: currentColor;
-}
-
-/* ---- Cost comparison cards ---- */
-.cost-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
-  padding: var(--space-xl);
-  box-shadow: var(--shadow-md);
-}
-
-.cost-card--proposed {
-  border-color: var(--accent-1);
-  box-shadow: 0 0 0 3px rgba(24,65,200,0.1), var(--shadow-md);
-}
-
-.cost-card__header {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: var(--space-lg);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.cost-card__items { display: flex; flex-direction: column; gap: 12px; }
-
-.cost-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.cost-item:last-child { border-bottom: none; padding-bottom: 0; }
-
-.cost-item__name { font-weight: 400; }
-.cost-item__amount { font-family: var(--font-mono); font-weight: 600; color: var(--text-primary); }
-
-.cost-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: var(--space-lg);
-  padding-top: var(--space-lg);
-  border-top: 2px solid var(--border-medium);
-}
-
-.cost-total__label {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.cost-total__value {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--accent-1);
-  letter-spacing: -0.04em;
-}
-
-.cost-card--proposed .cost-total__value { color: var(--accent-2); }
-
-.cost-note {
-  margin-top: var(--space-sm);
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-/* ---- Phase pills ---- */
-.phase-pill {
+/* === Hero Badge === */
+.hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 16px;
-  border-radius: 50px;
-  font-size: 0.8rem;
+  background: rgba(0,48,135,0.08);
+  border: 1px solid rgba(0,48,135,0.15);
+  border-radius: 9999px;
+  padding: 6px 14px;
+  font-size: 0.75rem;
   font-weight: 600;
+  color: var(--color-primary);
+  letter-spacing: 0.05em;
+  margin-bottom: 1.5rem;
+}
+.hero-badge__dot {
+  width: 6px; height: 6px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.5;transform:scale(1.5)}
+}
+
+/* === Hero Stack Pills === */
+.hero-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2rem;
+}
+.hero-stack__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-2);
+  box-shadow: var(--shadow-sm);
+}
+
+/* === Problem Section === */
+#problema {
+  background: var(--color-bg-2);
+}
+
+/* === Stack Visual === */
+.stack-visual-wrap {
+  position: relative;
+}
+.stack-arrow {
+  text-align: center;
+  font-size: 1.5rem;
+  color: var(--color-text-faint);
+  margin: -4px 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* === Numbers Section === */
+#numeros {
+  background: linear-gradient(160deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
   color: white;
-  margin-bottom: var(--space-sm);
+}
+#numeros .kpi-card {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.12);
+}
+#numeros .kpi-card::before {
+  background: linear-gradient(90deg, var(--color-accent), rgba(255,255,255,0.3));
+}
+#numeros .kpi-card__value {
+  color: white;
+}
+#numeros .kpi-card__label {
+  color: rgba(255,255,255,0.65);
+}
+#numeros .eyebrow {
+  color: var(--color-accent);
+}
+#numeros .eyebrow::before {
+  background: var(--color-accent);
+}
+#numeros .headline { color: white; }
+#numeros .body-lead { color: rgba(255,255,255,.65); }
+
+/* === Chart Section === */
+#comparativa {
+  background: var(--color-bg-3);
 }
 
-/* ---- Improvement grid ---- */
-.improvement-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  transition: all var(--transition-mid);
+/* === Roadmap Section === */
+#roadmap {
+  background: var(--color-bg-2);
 }
 
-.improvement-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent-1);
+/* === Improvements Section === */
+#mejoras {
+  background: var(--color-bg-3);
 }
 
-.improvement-card__icon {
-  font-size: 1.75rem;
-  margin-bottom: var(--space-md);
+/* === Closing Section === */
+#cierre {
+  background: linear-gradient(160deg, var(--color-primary-dark) 0%, #001236 100%);
+  color: white;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
-
-.improvement-card__title {
+#cierre::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0,180,216,0.15) 0%, transparent 65%);
+  pointer-events: none;
+}
+.cierre-logo {
   font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: var(--space-sm);
-}
-
-.improvement-card__desc {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-/* ---- Closing section ---- */
-.closing-logo {
-  font-family: var(--font-display);
-  font-size: clamp(3rem, 8vw, 7rem);
+  font-size: clamp(3rem, 8vw, 6rem);
   font-weight: 800;
   letter-spacing: -0.04em;
-  line-height: 1;
+  color: white;
+  opacity: 0;
+  margin-bottom: 1.5rem;
+}
+.cierre-logo span { color: var(--color-accent); }
+.cierre-tagline {
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  color: rgba(255,255,255,0.7);
+  max-width: 50ch;
+  margin: 0 auto 2.5rem;
+  line-height: 1.6;
+  opacity: 0;
+}
+.cierre-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 14px 32px;
+  border-radius: 9999px;
+  opacity: 0;
+  transition: transform 200ms, box-shadow 200ms;
+  box-shadow: 0 8px 30px rgba(0,180,216,0.35);
+}
+.cierre-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,180,216,0.45);
 }
 
-/* ---- Nav dark override ---- */
-.section--dark ~ .nav,
-.nav.is-dark {
-  background: rgba(11,16,32,0.9);
-  border-color: rgba(255,255,255,0.06);
+/* === Recommended highlight === */
+.recommended-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  margin-left: 6px;
+  vertical-align: middle;
 }
 
-/* ---- Responsive overrides ---- */
-@media (max-width: 768px) {
-  .stack-layer { flex-wrap: wrap; }
-  .cost-total__value { font-size: 1.5rem; }
+/* === Active nav link === */
+.site-nav__links a.active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* === Section divider === */
+.section-divider {
+  text-align: center;
+  padding: 3rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--color-text-faint);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* === Scroll indicator === */
+.scroll-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-faint);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 3rem;
+  animation: bounce 2.5s ease-in-out infinite;
+}
+.scroll-hint__arrow {
+  width: 20px; height: 20px;
+  border-right: 2px solid var(--color-text-faint);
+  border-bottom: 2px solid var(--color-text-faint);
+  transform: rotate(45deg);
+}
+@keyframes bounce {
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(8px)}
 }
